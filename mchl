@@ -22,15 +22,13 @@ use strict;
 # user to color mapping is kept here
 my $color_code = {};
 
-# Ansi temrinal escape sequence to revert all color-coding
+# Ansi terminal escape sequence to revert all color-coding
 my $reset_color = "\033[0m";
 
 # Main loop
 while (<>) {
   &colorize($_);
 }
-
-
 
 
 # ==================================================
