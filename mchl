@@ -19,10 +19,13 @@
 use MIME::Base64 qw(encode_base64);
 use strict;
 
-
+# user to color mapping is kept here
 my $color_code = {};
+
+# Ansi temrinal escape sequence to revert all color-coding
 my $reset_color = "\033[0m";
 
+# Main loop
 while (<>) {
   &colorize($_);
 }
@@ -30,9 +33,12 @@ while (<>) {
 
 
 
-# --------------------------------------------------
+# ==================================================
 # Subs
 
+# --------------------------------------------------
+# Figure out what color a user should get, and store it in the hash
+# $color_code. If the user-color mapping already exists, do nothing.
 sub determine_user_color {
   my $user = $_[0];
   return if (exists($color_code->{$user}));
@@ -62,9 +68,12 @@ sub determine_user_color {
                               $nums[2] , "m"  # blue
                              ));
   return;
-} # END hi-color
+}
 
 
+# --------------------------------------------------
+# Color-code if the line contains a chat message or if a user logs in
+# or logs out. Otherwise, print line as-is.
 sub colorize {
   my $line = $_[0];
   chomp $line; # remove newline
