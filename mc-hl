@@ -1,0 +1,109 @@
+#!/usr/bin/env perl
+# --------------------------------------------------
+# Script which when given minecraft log, highlights user chatting and
+# login/logoff with unique and persistent colors.
+#
+# Usage:
+#   hl /path/to/logs/latest.log
+#
+# It can be passed through less, like so:
+#   hl /path/to/logs/latest.log | less -R
+#
+# And used together with docker logs
+#   docker logs <world> -f | hl
+#
+# --------------------------------------------------
+# Mattias Jansson <fimblo@yanson.org>
+# --------------------------------------------------
+
+use MIME::Base64 qw(encode_base64);
+use strict;
+
+
+my $color_code = {};
+my $reset_color = "\033[0m";
+
+while (<>) {
+  &colorize($_);
+}
+
+
+
+
+# --------------------------------------------------
+# Subs
+
+sub determine_user_color {
+  my $user = $_[0];
+  return if (exists($color_code->{$user}));
+
+  my $b64 = encode_base64($user);
+
+  # Convert base64 to ascii decimal.
+  my @nums = map { 
+    ( ord($_) - 40 ) * 3 # make bigger spread of values
+  } split('', $b64);
+
+  # If the RGB values are too close, make one different
+  # deterministically
+  if ( abs($nums[0] - $nums[1] ) < 20  &&
+       abs($nums[1] - $nums[2] ) < 20  &&
+       abs($nums[2] - $nums[0] ) < 20) {
+    my $index = ($nums[4]/3) % 3;
+    $nums[$index] = ($nums[$index] + 100) % 256;
+  }
+
+  # enter color code for this user to map
+  $color_code->{$user} = join ('',
+                             (
+                              "\033[38;2;",   # Initiate color-coding
+                              $nums[0] , ";", # red
+                              $nums[1] , ";", # green
+                              $nums[2] , "m"  # blue
+                             ));
+  return;
+} # END hi-color
+
+
+sub colorize {
+  my $line = $_[0];
+  chomp $line; # remove newline
+
+  my ($prefix, $username, $message);
+  if ($line =~ m|^(.*?\[Server thread/INFO\]: )<(.*?)>(.*?)$|) {
+    $prefix   = $1;
+    $username = $2;
+    $message  = $3;
+
+    &determine_user_color($username);
+
+    print
+      $prefix .
+      $color_code->{$username} .
+      "<$username>" . 
+      $message . 
+      $reset_color . "\n";
+      
+  }
+  elsif ($line =~ m|^(.*?\[Server thread/INFO\]:) (.*?) (.*? the game)$|) {
+    $prefix   = $1;
+    $username = $2;
+    $message  = $3;
+
+    &determine_user_color($username);
+
+    print
+      $prefix .
+      $color_code->{$username} .
+      " $username " . 
+      $message . 
+      $reset_color . "\n";
+    
+
+}
+  else {
+    print $line . "\n";
+  }
+}
+
+#print "\033[38;2;255;82;197;48;2;155;106;0mHello\033[0m\n";
