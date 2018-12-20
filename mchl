@@ -16,17 +16,26 @@
 # Mattias Jansson <fimblo@yanson.org>
 # --------------------------------------------------
 
+# --------------------------------------------------
+# Debug code.
+# If MC_CL envvar is set to 'DEBUG_COLOR', then
+# this code will output color-coded usernames and exit.
+my $DEBUG;
+if (%ENV{'MC_CL'} eq 'DEBUG_COLOR') { $DEBUG=1; }
+
+# --------------------------------------------------
+# Here starts the saga
 use MIME::Base64 qw(encode_base64);
 use strict;
 
 # user to color mapping is kept here
 my $color_code = {};
-my $test_rgb = {};
+my $test_rgb = {}; # debug hash
 
 # Ansi terminal escape sequence to revert all color-coding
 my $reset_color = "\033[0m";
 
-#&test_colors();
+if ($DEBUG == 1) { &test_colors(); }
 
 # Main loop
 while (<>) {
@@ -145,6 +154,9 @@ sub colorize {
   }
 }
 
+
+# Debug code.
+# Called only if envvar MC_CL is set to 'DEBUG_COLORS'.
 sub test_colors() {
   my @usernames = qw/BomberThug
     ekniberg
