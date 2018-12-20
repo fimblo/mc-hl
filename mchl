@@ -31,6 +31,9 @@ while (<>) {
 }
 
 
+
+
+
 # ==================================================
 # Subs
 
@@ -41,12 +44,18 @@ sub determine_user_color {
   my $user = $_[0];
   return if (exists($color_code->{$user}));
 
-  my $b64 = encode_base64($user);
+  # Minimize number of possible chars in username
+  # Total possibilities is now 26
+  my $id = uc $user;       # upper case
+  $id =~ s/[^A-Z]//g;      # strip non alphas
+  $id =~ $id.$id.$id.$id ; # extend string size for short ids
 
   # Convert base64 to ascii decimal.
-  my @nums = map { 
-    ( ord($_) - 40 ) * 3 # make bigger spread of values
-  } split('', $b64);
+  my @nums =
+    map { $_ * 10 } # numbers 0-250
+    map { $_ % 26 } # numbers 0-25
+    map { ord }     # numbers 65-90
+  split('', $id);
 
   # If the RGB values are too close, make one different
   # deterministically
@@ -111,6 +120,31 @@ sub colorize {
   else {
     print $line . "\n";
   }
+}
+
+sub test_colors() {
+  my @usernames = qw/BomberThug
+    ekniberg
+    Etshiko
+    fimblo
+    Framistan
+    Maartini
+    Pandie_
+    Quint_
+    Svantius
+    Trrookk1000
+    Wolf_Tail/;
+
+  for my $user (@usernames) {
+    &determine_user_color($user);
+
+        print
+          $color_code->{$user} .
+          "$user" . 
+          $reset_color . "\n";
+  }
+
+  exit 0;
 }
 
 #print "\033[38;2;255;82;197;48;2;155;106;0mHello\033[0m\n";
