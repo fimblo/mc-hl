@@ -47,6 +47,10 @@ sub determine_user_color {
   my $user = $_[0];
   return if (exists($color_code->{$user}));
 
+  sub R { 0; }
+  sub G { 1; }
+  sub B { 2; }
+  
   # Minimize number of possible chars in username
   # Total possibilities is now 26
   my $id = uc $user;       # upper case
@@ -54,7 +58,7 @@ sub determine_user_color {
   $id =~ $id.$id.$id.$id ; # extend string size for short ids
 
   # Convert base64 to ascii decimal.
-  my @nums =
+  my @n =
     map { $_ * 10 } # numbers 0-250
     map { $_ % 26 } # numbers 0-25
     map { ord }     # numbers 65-90
@@ -63,38 +67,38 @@ sub determine_user_color {
   # If the RGB values are too close, make one different
   # deterministically
   my $range = 40;
-  if ( abs($nums[0] - $nums[1] ) < $range  &&
-       abs($nums[1] - $nums[2] ) < $range  &&
-       abs($nums[2] - $nums[0] ) < $range ) {
-    my $index = ($nums[4]/3) % 3;
-    $nums[$index] = ($nums[$index] + 100) % 256;
+  if ( abs($n[R] - $n[G] ) < $range  &&
+       abs($n[G] - $n[B] ) < $range  &&
+       abs($n[B] - $n[R] ) < $range ) {
+    my $index = ($n[4]/3) % 3;
+    $n[$index] = ($n[$index] + 100) % 256;
   }
 
   # If RGB is too dark, make one different deterministically
-   if ( $nums[0] < 40 &&
-        $nums[1] < 40 &&
-        $nums[2] < 40 ) {
-    my $index = ($nums[4]/3) % 3;
-    $nums[$index] = ($nums[$index] + 100) % 256;
+   if ( $n[R] < 40 &&
+        $n[G] < 40 &&
+        $n[B] < 40 ) {
+    my $index = ($n[4]/3) % 3;
+    $n[$index] = ($n[$index] + 100) % 256;
   }
 
   # Blue is a pain, since most terminals have a black background.
   # The blue which is hard to see has high B and low G values.
-  if ($nums[2] > 200 && $nums[1] < 80) {
-    $nums[1] += 80;
+  if ($n[B] > 200 && $n[G] < 80) {
+    $n[G] += 80;
   }
   
-  $test_rgb -> {$user} -> {'r'} = $nums[0];
-  $test_rgb -> {$user} -> {'g'} = $nums[1];
-  $test_rgb -> {$user} -> {'b'} = $nums[2];
+  $test_rgb -> {$user} -> {'r'} = $n[R];
+  $test_rgb -> {$user} -> {'g'} = $n[G];
+  $test_rgb -> {$user} -> {'b'} = $n[B];
 
   # enter color code for this user to map
   $color_code->{$user} = join ('',
                              (
                               "\033[38;2;",   # Initiate color-coding
-                              $nums[0] , ";", # red
-                              $nums[1] , ";", # green
-                              $nums[2] , "m"  # blue
+                              $n[R] , ";", # red
+                              $n[G] , ";", # green
+                              $n[B] , "m"  # blue
                              ));
   return;
 }
