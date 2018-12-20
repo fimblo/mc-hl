@@ -26,7 +26,7 @@ my $test_rgb = {};
 # Ansi terminal escape sequence to revert all color-coding
 my $reset_color = "\033[0m";
 
-&test_colors();
+#&test_colors();
 
 # Main loop
 while (<>) {
