@@ -25,7 +25,6 @@
 
 # --------------------------------------------------
 # Here starts the saga
-use MIME::Base64 qw(encode_base64);
 use strict;
 
 # user to color mapping is kept here
