@@ -21,9 +21,12 @@ use strict;
 
 # user to color mapping is kept here
 my $color_code = {};
+my $test_rgb = {};
 
 # Ansi terminal escape sequence to revert all color-coding
 my $reset_color = "\033[0m";
+
+&test_colors();
 
 # Main loop
 while (<>) {
@@ -59,12 +62,31 @@ sub determine_user_color {
 
   # If the RGB values are too close, make one different
   # deterministically
-  if ( abs($nums[0] - $nums[1] ) < 20  &&
-       abs($nums[1] - $nums[2] ) < 20  &&
-       abs($nums[2] - $nums[0] ) < 20) {
+  my $range = 40;
+  if ( abs($nums[0] - $nums[1] ) < $range  &&
+       abs($nums[1] - $nums[2] ) < $range  &&
+       abs($nums[2] - $nums[0] ) < $range ) {
     my $index = ($nums[4]/3) % 3;
     $nums[$index] = ($nums[$index] + 100) % 256;
   }
+
+  # If RGB is too dark, make one different deterministically
+   if ( $nums[0] < 40 &&
+        $nums[1] < 40 &&
+        $nums[2] < 40 ) {
+    my $index = ($nums[4]/3) % 3;
+    $nums[$index] = ($nums[$index] + 100) % 256;
+  }
+
+  # Blue is a pain, since most terminals have a black background.
+  # The blue which is hard to see has high B and low G values.
+  if ($nums[2] > 200 && $nums[1] < 80) {
+    $nums[1] += 80;
+  }
+  
+  $test_rgb -> {$user} -> {'r'} = $nums[0];
+  $test_rgb -> {$user} -> {'g'} = $nums[1];
+  $test_rgb -> {$user} -> {'b'} = $nums[2];
 
   # enter color code for this user to map
   $color_code->{$user} = join ('',
@@ -135,13 +157,18 @@ sub test_colors() {
     Trrookk1000
     Wolf_Tail/;
 
-  for my $user (@usernames) {
-    &determine_user_color($user);
+  for my $u (@usernames) {
+    &determine_user_color($u);
 
         print
-          $color_code->{$user} .
-          "$user" . 
-          $reset_color . "\n";
+          $color_code->{$u} .
+          "$u" . 
+          $reset_color .
+          "\tR:" . $test_rgb->{$u}->{'r'} .
+          " G:" . $test_rgb->{$u}->{'g'} .
+          " B:" . $test_rgb->{$u}->{'b'} .
+          "\n";
+          
   }
 
   exit 0;
