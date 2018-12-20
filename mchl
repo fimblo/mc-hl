@@ -20,8 +20,8 @@
 # Debug code.
 # If MC_CL envvar is set to 'DEBUG_COLOR', then
 # this code will output color-coded usernames and exit.
-my $DEBUG;
-if (%ENV{'MC_CL'} eq 'DEBUG_COLOR') { $DEBUG=1; }
+#my $DEBUG;
+#if (%ENV{'MC_CL'} eq 'DEBUG_COLOR') { $DEBUG=1; }
 
 # --------------------------------------------------
 # Here starts the saga
@@ -35,7 +35,7 @@ my $test_rgb = {}; # debug hash
 # Ansi terminal escape sequence to revert all color-coding
 my $reset_color = "\033[0m";
 
-if ($DEBUG == 1) { &test_colors(); }
+#if ($DEBUG == 1) { &test_colors(); }
 
 # Main loop
 while (<>) {
