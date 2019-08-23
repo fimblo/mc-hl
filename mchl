@@ -157,17 +157,11 @@ sub colorize {
 # Debug code.
 # Called only if envvar MC_CL is set to 'DEBUG_COLORS'.
 sub test_colors() {
-  my @usernames = qw/BomberThug
-    ekniberg
-    Etshiko
+  my @usernames = qw/
+    user-foo
     fimblo
-    Framistan
-    Maartini
-    Pandie_
-    Quint_
-    Svantius
-    Trrookk1000
-    Wolf_Tail/;
+    yet-another-user
+    /;
 
   for my $u (@usernames) {
     &determine_user_color($u);
